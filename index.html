@@ -48,6 +48,68 @@
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col md:flex-row custom-scrollbar">
 
+    <!-- AUTH SCREEN: LOGIN / REGISTER -->
+    <div id="auth-screen" class="fixed inset-0 z-[60] bg-gradient-to-br from-slate-900 via-teal-900 to-slate-900 flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
+            <div class="p-6 bg-slate-900 text-white flex items-center gap-3">
+                <div class="bg-teal-600 text-white p-2.5 rounded-xl shadow-lg flex items-center justify-center">
+                    <i class="fa-solid font-bold fa-user-nurse text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-slate-100 text-base leading-tight">E-Kalusugan System</h1>
+                    <p class="text-xs text-teal-400 font-medium">Brgy. San Isidro Health Center</p>
+                </div>
+            </div>
+
+            <!-- Auth Tabs -->
+            <div class="flex border-b border-slate-200 text-sm font-semibold">
+                <button type="button" id="auth-tab-login" onclick="switchAuthTab('login')" class="flex-1 py-3 border-b-2 border-teal-600 text-teal-700">Login</button>
+                <button type="button" id="auth-tab-register" onclick="switchAuthTab('register')" class="flex-1 py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-700">Register</button>
+            </div>
+
+            <div id="auth-message" class="hidden mx-6 mt-5 p-3 rounded-lg text-xs font-medium"></div>
+
+            <!-- Login Form -->
+            <form id="form-login" onsubmit="handleLogin(event)" class="p-6 space-y-4 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Username</label>
+                    <input type="text" id="login-username" required autocomplete="username" class="w-full p-2.5 border rounded-lg border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Password</label>
+                    <input type="password" id="login-password" required autocomplete="current-password" class="w-full p-2.5 border rounded-lg border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                </div>
+                <button type="submit" class="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg transition-all">
+                    <i class="fa-solid fa-right-to-bracket mr-1"></i> Login
+                </button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="form-register-user" onsubmit="handleRegisterUser(event)" class="p-6 space-y-4 text-xs hidden">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Full Name</label>
+                    <input type="text" id="signup-fullname" required autocomplete="name" class="w-full p-2.5 border rounded-lg border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Username</label>
+                    <input type="text" id="signup-username" required autocomplete="username" placeholder="3-20 letters, numbers or _" class="w-full p-2.5 border rounded-lg border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Password</label>
+                    <input type="password" id="signup-password" required autocomplete="new-password" placeholder="At least 6 characters" class="w-full p-2.5 border rounded-lg border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Confirm Password</label>
+                    <input type="password" id="signup-confirm" required autocomplete="new-password" class="w-full p-2.5 border rounded-lg border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                </div>
+                <p class="text-[10px] text-slate-500">New accounts are registered as Health Workers. An administrator can grant admin access.</p>
+                <button type="submit" class="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg transition-all">
+                    <i class="fa-solid fa-user-plus mr-1"></i> Create Account
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- Sidebar Navigation -->
     <aside class="w-full md:w-64 bg-slate-900 text-slate-300 flex-shrink-0 flex flex-col justify-between border-r border-slate-800">
         <div>
@@ -83,6 +145,10 @@
                 <button onclick="switchTab('inventory')" id="nav-inventory" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
                     <i class="fa-solid fa-pills w-5 text-center text-teal-400"></i>
                     <span>Pharmacy & Inventory</span>
+                </button>
+                <button onclick="switchTab('users')" id="nav-users" class="nav-btn admin-only hidden w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all text-slate-300 hover:bg-slate-800 hover:text-white">
+                    <i class="fa-solid fa-user-shield w-5 text-center text-teal-400"></i>
+                    <span>User Management</span>
                 </button>
             </nav>
         </div>
@@ -120,6 +186,16 @@
                     <i class="fa-solid fa-user-plus"></i>
                     <span>Register Patient</span>
                 </button>
+                <div class="flex items-center gap-3 pl-3 border-l border-slate-200">
+                    <div class="text-right">
+                        <p class="text-xs font-semibold text-slate-800" id="current-user-name">---</p>
+                        <span id="current-user-role" class="text-[10px] font-semibold uppercase">---</span>
+                    </div>
+                    <button onclick="handleLogout()" title="Logout" class="bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 text-xs font-semibold px-3 py-2.5 rounded-lg flex items-center gap-2 transition-all">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span>Logout</span>
+                    </button>
+                </div>
             </div>
         </header>
 
@@ -189,7 +265,7 @@
                             <button onclick="openNewConsultationModal()" class="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-4 py-2.5 rounded-lg border border-white/20 transition-all">
                                 <i class="fa-solid fa-file-waveform mr-1"></i> Log Consultation
                             </button>
-                            <button onclick="openDispenseModal()" class="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-4 py-2.5 rounded-lg border border-white/20 transition-all">
+                            <button onclick="openDispenseModal()" class="admin-only hidden bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-4 py-2.5 rounded-lg border border-white/20 transition-all">
                                 <i class="fa-solid fa-pills mr-1"></i> Dispense Rx
                             </button>
                         </div>
@@ -362,13 +438,45 @@
                         <h3 class="text-base font-bold text-slate-800">Barangay Pharmacy & Medicine Supply</h3>
                         <p class="text-xs text-slate-500">Track essential medicine allocations provided by DOH and Municipal Health Office.</p>
                     </div>
-                    <button onclick="openDispenseModal()" class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl flex items-center gap-2">
+                    <button onclick="openDispenseModal()" class="admin-only hidden bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl flex items-center gap-2">
                         <i class="fa-solid fa-pills"></i> Dispense Medication
                     </button>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="inventory-grid">
                     <!-- Dynamic Inventory Cards Rendered Here -->
+                </div>
+            </section>
+
+            <!-- TAB 6: USER MANAGEMENT (ADMIN ONLY) -->
+            <section id="tab-users" class="tab-content hidden space-y-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-800">System User Accounts</h3>
+                        <p class="text-xs text-slate-500">Manage health center staff accounts and administrator access.</p>
+                    </div>
+                    <button onclick="openAddUserModal()" class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl flex items-center gap-2">
+                        <i class="fa-solid fa-user-plus"></i> Add User
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-600">
+                            <thead class="bg-slate-50 text-slate-700 font-semibold uppercase text-[10px]">
+                                <tr>
+                                    <th class="p-3 rounded-l-lg">Full Name</th>
+                                    <th class="p-3">Username</th>
+                                    <th class="p-3">Role</th>
+                                    <th class="p-3">Date Registered</th>
+                                    <th class="p-3 rounded-r-lg text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table-body" class="divide-y divide-slate-100">
+                                <!-- Dynamic Render -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
         </div>
@@ -571,6 +679,49 @@
         </div>
     </div>
 
+    <!-- MODAL 4: ADD SYSTEM USER (ADMIN ONLY) -->
+    <div id="modal-add-user" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full flex flex-col shadow-2xl overflow-hidden">
+            <div class="p-5 bg-teal-700 text-white flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-user-shield text-lg"></i>
+                    <h3 class="font-bold text-sm">Add System User</h3>
+                </div>
+                <button onclick="closeModal('modal-add-user')" class="text-white/80 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="form-add-user" onsubmit="handleAddUser(event)" class="p-6 space-y-4 text-xs">
+                <div id="add-user-error" class="hidden p-3 rounded-lg font-medium bg-red-50 text-red-700 border border-red-200"></div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Full Name</label>
+                    <input type="text" id="adduser-fullname" required class="w-full p-2.5 border rounded-lg border-slate-300">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Username</label>
+                    <input type="text" id="adduser-username" required autocomplete="off" placeholder="3-20 letters, numbers or _" class="w-full p-2.5 border rounded-lg border-slate-300">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Role</label>
+                    <select id="adduser-role" class="w-full p-2.5 border rounded-lg border-slate-300">
+                        <option value="user">Health Worker</option>
+                        <option value="admin">Administrator</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Password</label>
+                    <input type="password" id="adduser-password" required autocomplete="new-password" placeholder="At least 6 characters" class="w-full p-2.5 border rounded-lg border-slate-300">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Confirm Password</label>
+                    <input type="password" id="adduser-confirm" required autocomplete="new-password" class="w-full p-2.5 border rounded-lg border-slate-300">
+                </div>
+                <div class="pt-3 border-t border-slate-200 flex justify-end gap-2">
+                    <button type="button" onclick="closeModal('modal-add-user')" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg">Create Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- PATIENT DETAILS DRAWER -->
     <div id="drawer-patient" class="fixed inset-y-0 right-0 w-full sm:w-[480px] bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col border-l border-slate-200">
         <div class="p-5 bg-slate-900 text-white flex items-center justify-between">
@@ -719,6 +870,8 @@
 
         // Navigation Switcher
         function switchTab(tabId) {
+            if (tabId === 'users' && !isAdmin()) tabId = 'dashboard';
+
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.nav-btn').forEach(el => {
                 el.classList.remove('bg-teal-700', 'text-white');
@@ -736,7 +889,8 @@
                 'patients': 'Barangay Patient Registry',
                 'consultations': 'Consultation & Clinical Records',
                 'programs': 'Barangay Health Programs',
-                'inventory': 'Pharmacy & Medicine Inventory'
+                'inventory': 'Pharmacy & Medicine Inventory',
+                'users': 'User Management'
             };
             document.getElementById('page-title').innerText = titleMap[tabId];
 
@@ -745,6 +899,7 @@
             if(tabId === 'consultations') renderConsultationsTable();
             if(tabId === 'programs') switchProgramTab('immunization');
             if(tabId === 'inventory') renderInventoryGrid();
+            if(tabId === 'users') renderUsersTable();
         }
 
         // Calculate Age
@@ -974,9 +1129,9 @@
                             <span class="text-xs text-slate-400">Current Stock:</span>
                             <p class="text-lg font-bold ${item.stock < 100 ? 'text-amber-600' : 'text-slate-800'}">${item.stock} <span class="text-xs font-normal">units</span></p>
                         </div>
-                        <button onclick="openDispenseModal('${item.id}')" class="bg-slate-100 hover:bg-teal-600 hover:text-white text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all">
+                        ${isAdmin() ? `<button onclick="openDispenseModal('${item.id}')" class="bg-slate-100 hover:bg-teal-600 hover:text-white text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all">
                             Dispense
-                        </button>
+                        </button>` : `<span class="text-[10px] text-slate-400"><i class="fa-solid fa-lock mr-1"></i>Admin only</span>`}
                     </div>
                 </div>
             `).join('');
@@ -1244,6 +1399,7 @@
         }
 
         function openDispenseModal(preSelectedMedId = null) {
+            if (!isAdmin()) return;
             populatePatientDropdowns();
             populateMedicineDropdowns();
             if(preSelectedMedId) {
@@ -1355,6 +1511,7 @@
 
         function handleDispense(e) {
             e.preventDefault();
+            if (!isAdmin()) return;
             const medId = document.getElementById('dispense-med-id').value;
             const qty = parseInt(document.getElementById('dispense-qty').value);
 
@@ -1384,9 +1541,242 @@
             }
         }
 
-        // Initialize App on Window Load
-        window.onload = function() {
+        // ===== Authentication & User Roles =====
+        // Accounts are kept in localStorage; passwords are stored as salted SHA-256 hashes.
+        const USERS_KEY = 'brgy_users';
+        const SESSION_KEY = 'brgy_session';
+        const DEFAULT_ADMIN = { username: 'admin', password: 'admin123', fullname: 'System Administrator' };
+
+        let users = JSON.parse(localStorage.getItem(USERS_KEY)) || [];
+        let currentUser = null;
+
+        function saveUsers() {
+            localStorage.setItem(USERS_KEY, JSON.stringify(users));
+        }
+
+        function isAdmin() {
+            return !!currentUser && currentUser.role === 'admin';
+        }
+
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+        }
+
+        function generateSalt() {
+            const bytes = crypto.getRandomValues(new Uint8Array(16));
+            return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function hashPassword(password, salt) {
+            const data = new TextEncoder().encode(salt + password);
+            const digest = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        function findUser(username) {
+            const key = username.toLowerCase();
+            return users.find(u => u.username.toLowerCase() === key);
+        }
+
+        async function createUser(fullname, username, password, role) {
+            const salt = generateSalt();
+            const user = {
+                username,
+                fullname,
+                role,
+                salt,
+                passwordHash: await hashPassword(password, salt),
+                createdAt: new Date().toISOString()
+            };
+            users.push(user);
+            saveUsers();
+            return user;
+        }
+
+        async function ensureDefaultAdmin() {
+            if (!users.some(u => u.role === 'admin')) {
+                await createUser(DEFAULT_ADMIN.fullname, DEFAULT_ADMIN.username, DEFAULT_ADMIN.password, 'admin');
+            }
+        }
+
+        function showAuthMessage(message, type = 'error') {
+            const box = document.getElementById('auth-message');
+            box.textContent = message;
+            box.className = 'mx-6 mt-5 p-3 rounded-lg text-xs font-medium ' +
+                (type === 'error' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200');
+        }
+
+        function hideAuthMessage() {
+            document.getElementById('auth-message').classList.add('hidden');
+        }
+
+        function switchAuthTab(tab) {
+            hideAuthMessage();
+            const isLogin = tab === 'login';
+            document.getElementById('form-login').classList.toggle('hidden', !isLogin);
+            document.getElementById('form-register-user').classList.toggle('hidden', isLogin);
+            const active = ['border-teal-600', 'text-teal-700'];
+            const inactive = ['border-transparent', 'text-slate-500'];
+            const loginTab = document.getElementById('auth-tab-login');
+            const registerTab = document.getElementById('auth-tab-register');
+            (isLogin ? loginTab : registerTab).classList.remove(...inactive);
+            (isLogin ? loginTab : registerTab).classList.add(...active);
+            (isLogin ? registerTab : loginTab).classList.remove(...active);
+            (isLogin ? registerTab : loginTab).classList.add(...inactive);
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value;
+
+            const user = findUser(username);
+            if (!user || await hashPassword(password, user.salt) !== user.passwordHash) {
+                showAuthMessage('Invalid username or password.');
+                return;
+            }
+
+            sessionStorage.setItem(SESSION_KEY, user.username);
+            document.getElementById('form-login').reset();
+            startSession(user);
+        }
+
+        // Returns an error message, or null if the new account details are valid.
+        function validateNewAccount(fullname, username, password, confirmPassword) {
+            if (fullname.length < 2) return 'Please enter the full name.';
+            if (!/^[A-Za-z0-9_]{3,20}$/.test(username)) return 'Username must be 3-20 characters: letters, numbers or underscore only.';
+            if (findUser(username)) return 'That username is already taken.';
+            if (password.length < 6) return 'Password must be at least 6 characters.';
+            if (password !== confirmPassword) return 'Passwords do not match.';
+            return null;
+        }
+
+        async function handleRegisterUser(e) {
+            e.preventDefault();
+            const fullname = normalizeSpaces(document.getElementById('signup-fullname').value);
+            const username = document.getElementById('signup-username').value.trim();
+            const password = document.getElementById('signup-password').value;
+            const confirmPassword = document.getElementById('signup-confirm').value;
+
+            const error = validateNewAccount(fullname, username, password, confirmPassword);
+            if (error) return showAuthMessage(error);
+
+            // Self-registration always creates a regular user; only an admin can promote.
+            await createUser(fullname, username, password, 'user');
+            document.getElementById('form-register-user').reset();
+            switchAuthTab('login');
+            document.getElementById('login-username').value = username;
+            showAuthMessage('Account created! You can now log in.', 'success');
+        }
+
+        function startSession(user) {
+            currentUser = user;
+            hideAuthMessage();
+            document.getElementById('auth-screen').classList.add('hidden');
+
+            document.getElementById('current-user-name').textContent = user.fullname;
+            const roleBadge = document.getElementById('current-user-role');
+            roleBadge.textContent = user.role === 'admin' ? 'Administrator' : 'Health Worker';
+            roleBadge.className = 'text-[10px] font-semibold uppercase ' + (user.role === 'admin' ? 'text-purple-600' : 'text-teal-600');
+
+            document.querySelectorAll('.admin-only').forEach(el => el.classList.toggle('hidden', !isAdmin()));
             switchTab('dashboard');
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            sessionStorage.removeItem(SESSION_KEY);
+            document.querySelectorAll('.fixed.inset-0.z-50').forEach(m => m.classList.add('hidden'));
+            closeDrawer();
+            document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
+            switchAuthTab('login');
+            document.getElementById('auth-screen').classList.remove('hidden');
+        }
+
+        function renderUsersTable() {
+            const tbody = document.getElementById('users-table-body');
+            tbody.innerHTML = users.map(u => {
+                const isSelf = u.username === currentUser.username;
+                const roleBadge = u.role === 'admin'
+                    ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-100 text-purple-800">Administrator</span>'
+                    : '<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-teal-100 text-teal-800">Health Worker</span>';
+                const actions = isSelf
+                    ? '<span class="text-[10px] text-slate-400">(You)</span>'
+                    : `<button onclick="toggleUserRole('${u.username}')" class="bg-slate-100 hover:bg-teal-600 hover:text-white text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all">
+                            ${u.role === 'admin' ? 'Make Health Worker' : 'Make Admin'}
+                       </button>
+                       <button onclick="deleteUser('${u.username}')" class="bg-red-50 hover:bg-red-600 hover:text-white text-red-600 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ml-1">
+                            Delete
+                       </button>`;
+                return `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-3 font-semibold text-slate-800">${escapeHtml(u.fullname)}</td>
+                        <td class="p-3 font-mono">${escapeHtml(u.username)}</td>
+                        <td class="p-3">${roleBadge}</td>
+                        <td class="p-3">${new Date(u.createdAt).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
+                        <td class="p-3 text-right whitespace-nowrap">${actions}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function openAddUserModal() {
+            if (!isAdmin()) return;
+            document.getElementById('form-add-user').reset();
+            document.getElementById('add-user-error').classList.add('hidden');
+            openModal('modal-add-user');
+        }
+
+        async function handleAddUser(e) {
+            e.preventDefault();
+            if (!isAdmin()) return;
+            const fullname = normalizeSpaces(document.getElementById('adduser-fullname').value);
+            const username = document.getElementById('adduser-username').value.trim();
+            const role = document.getElementById('adduser-role').value === 'admin' ? 'admin' : 'user';
+            const password = document.getElementById('adduser-password').value;
+            const confirmPassword = document.getElementById('adduser-confirm').value;
+
+            const error = validateNewAccount(fullname, username, password, confirmPassword);
+            if (error) {
+                const box = document.getElementById('add-user-error');
+                box.textContent = error;
+                box.classList.remove('hidden');
+                return;
+            }
+
+            await createUser(fullname, username, password, role);
+            closeModal('modal-add-user');
+            renderUsersTable();
+        }
+
+        function toggleUserRole(username) {
+            if (!isAdmin()) return;
+            const user = findUser(username);
+            if (!user || user.username === currentUser.username) return;
+            user.role = user.role === 'admin' ? 'user' : 'admin';
+            saveUsers();
+            renderUsersTable();
+        }
+
+        function deleteUser(username) {
+            if (!isAdmin()) return;
+            const user = findUser(username);
+            if (!user || user.username === currentUser.username) return;
+            if (!confirm(`Delete the account of ${user.fullname} (${user.username})?`)) return;
+            users = users.filter(u => u !== user);
+            saveUsers();
+            renderUsersTable();
+        }
+
+        // Initialize App on Window Load
+        window.onload = async function() {
+            await ensureDefaultAdmin();
+            const sessionUser = findUser(sessionStorage.getItem(SESSION_KEY) || '');
+            if (sessionUser) {
+                startSession(sessionUser);
+            } else {
+                switchAuthTab('login');
+            }
         };
     </script>
 </body>
